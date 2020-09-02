@@ -1,18 +1,10 @@
 language: go
 
 go:
-  - "1.9.x"
-  - "1.10.x"
+  - "1.13.x"
 
 services:
   - docker
-
-install:
-  - go get github.com/golang/snappy
-  - go get github.com/apache/thrift/lib/go/thrift
-  - go get github.com/colinmarc/hdfs
-  - go get github.com/spf13/afero
-  - go get cloud.google.com/go/storage
 
 script:
   - make test

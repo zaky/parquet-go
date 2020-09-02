@@ -4,9 +4,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/xitongsys/parquet-go/ParquetFile"
-	"github.com/xitongsys/parquet-go/ParquetReader"
-	"github.com/xitongsys/parquet-go/ParquetWriter"
+	"github.com/xitongsys/parquet-go-source/local"
+	"github.com/xitongsys/parquet-go/reader"
+	"github.com/xitongsys/parquet-go/writer"
 )
 
 type Student struct {
@@ -23,18 +23,19 @@ type Student struct {
 func main() {
 	var err error
 	//write
-	fw, err := ParquetFile.NewLocalFileWriter("column.parquet")
+	fw, err := local.NewLocalFileWriter("column.parquet")
 	if err != nil {
 		log.Println("Can't create file", err)
 		return
 	}
-	pw, err := ParquetWriter.NewParquetWriter(fw, new(Student), 4)
+	pw, err := 
+	writer.NewParquetWriter(fw, new(Student), 4)
 	if err != nil {
 		log.Println("Can't create parquet writer")
 		return
 	}
-	num := 10
-	for i := 0; i < num; i++ {
+	num := int64(10)
+	for i := 0; int64(i) < num; i++ {
 		stu := Student{
 			Name:   "StudentName",
 			Age:    int32(20 + i%5),
@@ -59,32 +60,32 @@ func main() {
 	var rls, dls []int32
 
 	///read
-	fr, err := ParquetFile.NewLocalFileReader("column.parquet")
+	fr, err := local.NewLocalFileReader("column.parquet")
 	if err != nil {
 		log.Println("Can't open file", err)
 		return
 	}
-	pr, err := ParquetReader.NewParquetColumnReader(fr, 4)
+	pr, err := reader.NewParquetColumnReader(fr, 4)
 	if err != nil {
 		log.Println("Can't create column reader", err)
 		return
 	}
-	num = int(pr.GetNumRows())
+	num = int64(pr.GetNumRows())
 
-	pr.SkipRowsByPath("name", 5) //skip the first five rows
-	names, rls, dls = pr.ReadColumnByPath("name", num)
-	log.Println("name", names, rls, dls)
+	pr.SkipRowsByPath("parquet_go_root.name", 5) //skip the first five rows
+	names, rls, dls, err = pr.ReadColumnByPath("parquet_go_root.name", num)
+	log.Println("name", names, rls, dls, err)
 
-	classes, rls, dls = pr.ReadColumnByPath("class.list.element", num)
-	log.Println("class", classes, rls, dls)
+	classes, rls, dls, err = pr.ReadColumnByPath("parquet_go_root.class.list.element", num)
+	log.Println("class", classes, rls, dls, err)
 
-	scores_key, rls, dls = pr.ReadColumnByPath("score.key_value.key", num)
-	scores_value, rls, dls = pr.ReadColumnByPath("score.key_value.value", num)
-	log.Println("scores_key", scores_key)
-	log.Println("scores_value", scores_value)
+	scores_key, rls, dls, err = pr.ReadColumnByPath("parquet_go_root.score.key_value.key", num)
+	scores_value, rls, dls, err = pr.ReadColumnByPath("parquet_go_root.score.key_value.value", num)
+	log.Println("parquet_go_root.scores_key", scores_key, err)
+	log.Println("parquet_go_root.scores_value", scores_value, err)
 
 	pr.SkipRowsByIndex(2, 5) //skip the first five rows
-	ids, _, _ = pr.ReadColumnByIndex(2, num)
+	ids, _, _, _ = pr.ReadColumnByIndex(2, num)
 	log.Println(ids)
 
 	pr.ReadStop()
